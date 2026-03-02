@@ -69,15 +69,14 @@ auth:
     guest: {}
     # Uncomment if using GitHub provider
     # See https://backstage.io/docs/auth/github/provider#configuration
-    # github:
-    #   development:
-    #     clientId: ${AUTH_GITHUB_CLIENT_ID}
-    #     clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
-    #     signIn:
-    #       resolvers:
-    #         - resolver: usernameMatchingUserEntityName
-    # # Since we do not have a User entity, for local development, uncomment the following line to allow sign-in without a user in the catalog
-    #           dangerouslyAllowSignInWithoutUserInCatalog: true
+    github:
+      development:
+        clientId: ${AUTH_GITHUB_CLIENT_ID}
+        clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
+        signIn:
+          resolvers:
+            - resolver: usernameMatchingUserEntityName
+              dangerouslyAllowSignInWithoutUserInCatalog: true
 
 scaffolder: {}
   # see https://backstage.io/docs/features/software-templates/configuration for software template options
@@ -88,3 +87,11 @@ catalog:
     pullRequestBranchName: backstage-integration
   rules:
     - allow: [Component, System, API, Resource, Location]
+
+# Lightspeed configuration
+lightspeed:
+  mcpServers:
+    - name: mcp-integration-tools
+      token: ${MCP_TOKEN_1}
+    - name: test-mcp-server
+      token: ${MCP_TOKEN_2}
