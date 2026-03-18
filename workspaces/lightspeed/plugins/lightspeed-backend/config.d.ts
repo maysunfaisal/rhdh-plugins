@@ -41,6 +41,11 @@ export interface Config {
        */
       name: string;
       /**
+       * The URL of the MCP server endpoint.
+       * @visibility backend
+       */
+      url?: string;
+      /**
        * The access token for authenticating MCP server.
        * @visibility secret
        */

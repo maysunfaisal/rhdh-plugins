@@ -58,12 +58,18 @@ export const chatHistory: any = {};
 chatHistory[mockConversationId] = conversation1History;
 chatHistory[mockConversationId2] = conversation2History;
 
+export const registeredMcpServers = new Set<string>();
+
 export function resetChatHistory() {
   // Clear all existing keys
   Object.keys(chatHistory).forEach(key => delete chatHistory[key]);
   // Restore the original conversations
   chatHistory[mockConversationId] = conversation1History;
   chatHistory[mockConversationId2] = conversation2History;
+}
+
+export function resetMcpServers() {
+  registeredMcpServers.clear();
 }
 
 export const lcsHandlers: HttpHandler[] = [
@@ -235,6 +241,60 @@ export const lcsHandlers: HttpHandler[] = [
       ],
     };
     return HttpResponse.json(mockModelRes);
+  }),
+
+  // MCP server registration endpoints
+  http.post(`${LOCAL_LCS_ADDR}/v1/mcp-servers`, async ({ request }) => {
+    const body = (await request.json()) as { name: string };
+    if (registeredMcpServers.has(body.name)) {
+      return HttpResponse.json(
+        {
+          detail: {
+            response: 'Conflict',
+            cause: `MCP server '${body.name}' already exists`,
+          },
+        },
+        { status: 409 },
+      );
+    }
+    registeredMcpServers.add(body.name);
+    return HttpResponse.json(
+      {
+        name: body.name,
+        message: `MCP server '${body.name}' registered successfully`,
+      },
+      { status: 201 },
+    );
+  }),
+
+  http.get(`${LOCAL_LCS_ADDR}/v1/mcp-servers`, () => {
+    const servers = Array.from(registeredMcpServers).map(name => ({
+      name,
+      url: 'http://mock-url',
+      provider_id: 'model-context-protocol',
+      source: 'api',
+    }));
+    return HttpResponse.json({ servers });
+  }),
+
+  http.delete(`${LOCAL_LCS_ADDR}/v1/mcp-servers/:name`, ({ params }) => {
+    const name = params.name as string;
+    if (!registeredMcpServers.has(name)) {
+      return HttpResponse.json(
+        {
+          detail: {
+            response: 'Not found',
+            cause: `MCP server '${name}' not found`,
+          },
+        },
+        { status: 404 },
+      );
+    }
+    registeredMcpServers.delete(name);
+    return HttpResponse.json({
+      name,
+      message: `MCP server '${name}' unregistered successfully`,
+    });
   }),
 
   // Catch-all handler for unknown paths

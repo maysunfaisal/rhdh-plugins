@@ -29,7 +29,17 @@ backend:
   # The production database configuration is stored in app-config.production.yaml
   database:
     client: better-sqlite3
-    connection: ':memory:'
+    connection:
+      directory: './sqlite-data'
+    # OpenShift / RHDH production — uses the PostgreSQL instance managed by the
+    # RHDH Helm chart or Operator.  These env vars are injected from the
+    # PostgreSQL Secret into the Backstage container by the deployment config.
+    # client: pg
+    # connection:
+    #   host: ${POSTGRES_HOST}
+    #   port: ${POSTGRES_PORT}
+    #   user: ${POSTGRES_USER}
+    #   password: ${POSTGRES_PASSWORD}
   # workingDirectory: /tmp # Use this to configure a working directory for the scaffolder, defaults to the OS temp-dir
 
 integrations:
@@ -69,15 +79,14 @@ auth:
     guest: {}
     # Uncomment if using GitHub provider
     # See https://backstage.io/docs/auth/github/provider#configuration
-    # github:
-    #   development:
-    #     clientId: ${AUTH_GITHUB_CLIENT_ID}
-    #     clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
-    #     signIn:
-    #       resolvers:
-    #         - resolver: usernameMatchingUserEntityName
-    # # Since we do not have a User entity, for local development, uncomment the following line to allow sign-in without a user in the catalog
-    #           dangerouslyAllowSignInWithoutUserInCatalog: true
+    github:
+      development:
+        clientId: ${AUTH_GITHUB_CLIENT_ID}
+        clientSecret: ${AUTH_GITHUB_CLIENT_SECRET}
+        signIn:
+          resolvers:
+            - resolver: usernameMatchingUserEntityName
+              dangerouslyAllowSignInWithoutUserInCatalog: true
 
 scaffolder: {}
   # see https://backstage.io/docs/features/software-templates/configuration for software template options
@@ -88,3 +97,11 @@ catalog:
     pullRequestBranchName: backstage-integration
   rules:
     - allow: [Component, System, API, Resource, Location]
+
+# Lightspeed configuration
+lightspeed:
+  servicePort: 8080
+  mcpServers:
+    - name: test-mcp-server
+      url: http://localhost:8888/mcp
+      token: ${MCP_TOKEN_1}
